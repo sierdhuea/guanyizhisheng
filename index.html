@@ -1960,7 +1960,7 @@
                                 </div>
                                 <div class="form-group"><label>来源</label>
                                     <select id="sSource">
-                                        <option value="上门">上门</option><option value="线上咨询">线上咨询</option>
+                                        <option value="上门">上门</option><option value="抖音来客">抖音来客</option><option value="微信视频号">微信视频号</option>
                                         <option value="转介绍">转介绍</option><option value="地推">地推</option><option value="社群">社群</option>
                                     </select>
                                 </div>
@@ -1969,7 +1969,7 @@
                             <div class="form-row five">
                                 <div class="form-group"><label>学期选择</label>
                                     <select id="sSemester">
-                                        <option value="全年">全年</option><option value="半年">半年</option><option value="学期">学期</option>
+                                        <option value="全年">全年</option><option value="半年">半年</option><option value="学期">学期</option><option value="暑假班">暑假班</option><option value="寒假班">寒假班</option>
                                     </select>
                                 </div>
                                 <div class="form-group"><label>就读学校</label><input type="text" id="sSchool" placeholder="学校名称" /></div>
@@ -3143,6 +3143,154 @@
                 renderClassList();
                 renderClassDetail();
                 setInterval(updateHeaderDate, 60000);
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') { calPopup.classList.remove('show');
+                        attendancePopup.style.display = 'none';
+                        popupTarget = null; }
+                });
+                document.querySelector('.sidebar-nav .nav-item.active')?.click();
+            }
+
+            init();
+
+        })();
+    </script>
+
+</body>
+</html>
+
+                }
+            }
+
+            function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                ta.style.top = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('已复制到剪贴板');
+                    setSyncStatus('📋 已复制到剪贴板', 'info');
+                } catch (e) {
+                    showToast('复制失败，请手动选择复制', 'warning');
+                }
+                document.body.removeChild(ta);
+            }
+
+            function importData() {
+                const text = syncTextarea.value.trim();
+                if (!text) { setSyncStatus('⚠️ 请先粘贴要导入的数据', 'error');
+                    showToast('请粘贴数据', 'warning'); return; }
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(text);
+                } catch (e) {
+                    setSyncStatus('❌ 数据格式错误，请检查是否为有效的JSON', 'error');
+                    showToast('数据格式错误', 'warning');
+                    return;
+                }
+
+                if (!parsed.version || !parsed.students || !Array.isArray(parsed.students)) {
+                    setSyncStatus('❌ 数据格式不完整，缺少 students 字段或版本信息', 'error');
+                    showToast('数据格式不完整', 'warning');
+                    return;
+                }
+
+                if (!confirm('导入将覆盖当前所有数据（学员、日历、班级），确认继续吗？')) {
+                    return;
+                }
+
+                try {
+                    students = parsed.students || [];
+                    calendarEvents = parsed.calendarEvents || {};
+                    classesData = parsed.classesData || {};
+
+                    students.forEach(s => { if (!s.followups) s.followups = []; });
+                    for (let id in classesData) {
+                        if (!classesData[id].students) classesData[id].students = [];
+                        if (!classesData[id].totalLessons) classesData[id].totalLessons = DEFAULT_LESSONS;
+                        const total = classesData[id].totalLessons;
+                        classesData[id].students.forEach(stu => {
+                            if (!stu.attendance || stu.attendance.length !== total) {
+                                const old = stu.attendance || [];
+                                stu.attendance = [];
+                                for (let i = 0; i < total; i++) { stu.attendance.push(i < old.length ? old[
+                                        i] : null); }
+                            }
+                        });
+                    }
+
+                    saveStudents();
+                    saveCalendarEvents();
+                    saveClasses();
+
+                    resetForm();
+                    renderList(searchInput.value);
+                    updateStats();
+                    renderCalendar();
+                    renderClassList();
+                    renderClassDetail();
+
+                    setSyncStatus(`✅ 数据导入成功！共 ${students.length} 名学员，${Object.keys(classesData).length} 个班级`, 'success');
+                    showToast('数据导入成功！');
+                } catch (e) {
+                    setSyncStatus('❌ 导入失败：' + e.message, 'error');
+                    showToast('导入失败', 'warning');
+                }
+            }
+
+            function clearSyncText() {
+                syncTextarea.value = '';
+                syncStatus.style.display = 'none';
+            }
+
+            // ============================================================
+            //  绑定数据同步事件
+            // ============================================================
+            syncExportBtn.addEventListener('click', exportData);
+            syncCopyBtn.addEventListener('click', copyData);
+            syncImportBtn.addEventListener('click', importData);
+            syncClearBtn.addEventListener('click', clearSyncText);
+
+            syncTextarea.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    importData();
+                }
+            });
+
+            // ============================================================
+            //  头部日期
+            // ============================================================
+            function updateHeaderDate() {
+                const t = getTodayDate();
+                document.getElementById('headerDate').textContent =
+                    `${t.year}年${String(t.month+1).padStart(2,'0')}月${String(t.day).padStart(2,'0')}日`;
+            }
+
+            // ============================================================
+            //  初始化
+            // ============================================================
+            function init() {
+                loadStudents();
+                loadCalendarEvents();
+                loadClasses();
+                updateHeaderDate();
+                resetForm();
+                fuDate.value = getTodayStr();
+                sFollowDate.value = getTodayStr();
+                const ids = Object.keys(classesData);
+                如果 (ids.长度 > 0) 当前类ID = ids[0];
+                renderList('');
+                updateStats();
+                renderCalendar();
+                renderClassList();
+                renderClassDetail();
+                setInterval(更新页眉日期, 60000);
                 document.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape') { calPopup.classList.remove('show');
                         attendancePopup.style.display = 'none';
