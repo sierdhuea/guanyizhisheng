@@ -2050,7 +2050,7 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- 页面：数据同步 (新增) -->
+        <!-- 页面：数据同步 (新增，无脱敏) -->
         <!-- ============================================================ -->
         <div class="page-section" id="page-sync">
             <div class="card">
@@ -2060,7 +2060,7 @@
                 </div>
                 <div class="sync-info">
                     <i class="fas fa-info-circle"></i>
-                    导出当前所有数据（学员、日历、班级），敏感信息（姓名、电话）将自动脱敏。复制文本后，在另一台设备的此页面粘贴并导入，即可完成数据同步。
+                    导出当前所有数据（学员、日历、班级）的原始内容（含真实姓名、电话）。复制文本后，在另一台设备的此页面粘贴并导入，即可完成数据同步。
                 </div>
                 <textarea class="sync-textarea" id="syncTextarea" placeholder="点击「导出数据」生成同步文本，或粘贴从其他设备复制的同步文本后点击「导入数据」…"></textarea>
                 <div class="sync-actions">
@@ -2071,8 +2071,8 @@
                 </div>
                 <div class="sync-status" id="syncStatus"></div>
                 <div style="margin-top:14px;font-size:12px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:14px;display:flex;gap:20px;flex-wrap:wrap;">
-                    <span><i class="fas fa-user-secret" style="color:var(--hermes);"></i> 脱敏规则：姓名保留首字，电话保留前3后4位</span>
-                    <span><i class="fas fa-database" style="color:var(--hermes);"></i> 导入将覆盖当前所有数据，请谨慎操作</span>
+                    <span><i class="fas fa-database" style="color:var(--hermes);"></i> 导出原始数据，请确保传输安全</span>
+                    <span><i class="fas fa-exclamation-triangle" style="color:#E67E22;"></i> 导入将覆盖当前所有数据，请谨慎操作</span>
                 </div>
             </div>
         </div>
@@ -2208,54 +2208,6 @@
             function formatDateDisplay(s) { if (!s) return '-'; const p = s.split('-'); return `${p[0]}年${parseInt(p[1])}月${parseInt(p[2])}日`; }
 
             // ============================================================
-            //  脱敏工具
-            // ============================================================
-            function maskName(name) {
-                if (!name || name.length === 0) return '';
-                if (name.length === 1) return name;
-                return name.charAt(0) + '*'.repeat(name.length - 1);
-            }
-
-            function maskPhone(phone) {
-                if (!phone || phone.length < 7) return phone || '';
-                const s = phone.replace(/\s/g, '');
-                if (s.length <= 4) return s;
-                if (s.length <= 7) return s.slice(0, 2) + '****' + s.slice(-2);
-                return s.slice(0, 3) + '****' + s.slice(-4);
-            }
-
-            // 深度脱敏数据
-            function desensitizeData(data) {
-                const result = JSON.parse(JSON.stringify(data));
-
-                // 脱敏学员
-                if (result.students && Array.isArray(result.students)) {
-                    result.students = result.students.map(s => {
-                        const copy = { ...s };
-                        if (copy.name) copy.name = maskName(copy.name);
-                        if (copy.phone) copy.phone = maskPhone(copy.phone);
-                        return copy;
-                    });
-                }
-
-                // 脱敏班级中的学生姓名
-                if (result.classesData && typeof result.classesData === 'object') {
-                    for (let clsId in result.classesData) {
-                        const cls = result.classesData[clsId];
-                        if (cls.students && Array.isArray(cls.students)) {
-                            cls.students = cls.students.map(stu => {
-                                const copy = { ...stu };
-                                if (copy.name) copy.name = maskName(copy.name);
-                                return copy;
-                            });
-                        }
-                    }
-                }
-
-                return result;
-            }
-
-            // ============================================================
             //  存储
             // ============================================================
             function saveStudents() { try { localStorage.setItem('gyzs_students', JSON.stringify(students)); } catch (e) {} }
@@ -2324,7 +2276,7 @@
                     students: ['👥 学员管理', '录入 · 编辑 · 跟进学员信息'],
                     calendar: ['📅 日历日程', '查看和管理每日活动安排'],
                     classes: ['🏫 班级课堂', '班级出勤登记与考勤统计'],
-                    sync: ['🔄 数据同步', '跨设备数据迁移 · 脱敏导出与导入']
+                    sync: ['🔄 数据同步', '跨设备数据迁移 · 原始数据导出与导入']
                 };
                 const t = titles[page] || ['页面', ''];
                 document.getElementById('pageTitle').textContent = t[0];
@@ -3017,7 +2969,7 @@
             });
 
             // ============================================================
-            //  数据同步功能
+            //  数据同步功能 (无脱敏)
             // ============================================================
             function setSyncStatus(message, type = 'info') {
                 syncStatus.textContent = message;
@@ -3038,13 +2990,13 @@
                 };
             }
 
+            // 导出原始数据（无脱敏）
             function exportData() {
                 const rawData = getAllData();
-                const desensitized = desensitizeData(rawData);
-                const jsonStr = JSON.stringify(desensitized, null, 2);
+                const jsonStr = JSON.stringify(rawData, null, 2);
                 syncTextarea.value = jsonStr;
-                setSyncStatus('✅ 数据已脱敏导出，请复制文本并在其他设备导入', 'success');
-                showToast('数据已导出（脱敏）');
+                setSyncStatus('✅ 原始数据已导出，请复制文本并在其他设备导入', 'success');
+                showToast('数据已导出（原始）');
             }
 
             function copyData() {
@@ -3094,7 +3046,6 @@
                     return;
                 }
 
-                // 验证数据结构
                 if (!parsed.version || !parsed.students || !Array.isArray(parsed.students)) {
                     setSyncStatus('❌ 数据格式不完整，缺少 students 字段或版本信息', 'error');
                     showToast('数据格式不完整', 'warning');
@@ -3106,12 +3057,10 @@
                 }
 
                 try {
-                    // 导入数据 (覆盖)
                     students = parsed.students || [];
                     calendarEvents = parsed.calendarEvents || {};
                     classesData = parsed.classesData || {};
 
-                    // 确保数据结构完整
                     students.forEach(s => { if (!s.followups) s.followups = []; });
                     for (let id in classesData) {
                         if (!classesData[id].students) classesData[id].students = [];
@@ -3127,12 +3076,10 @@
                         });
                     }
 
-                    // 保存到本地存储
                     saveStudents();
                     saveCalendarEvents();
                     saveClasses();
 
-                    // 刷新UI
                     resetForm();
                     renderList(searchInput.value);
                     updateStats();
@@ -3161,7 +3108,6 @@
             syncImportBtn.addEventListener('click', importData);
             syncClearBtn.addEventListener('click', clearSyncText);
 
-            // 支持 Ctrl+Enter 快速导入
             syncTextarea.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                     e.preventDefault();
