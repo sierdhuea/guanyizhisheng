@@ -1,0 +1,3214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>莞邑之声 · 教务管理系统</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- Google Font (Playfair Display + Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- SheetJS -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+    </script>
+    <style>
+        /* ================================================================
+               全局设计 — 爱马仕橙 · 大气 · 奢华
+               ================================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --hermes: #E87A3E;
+            --hermes-dark: #C96A2E;
+            --hermes-light: #F5A06A;
+            --hermes-glow: rgba(232, 122, 62, 0.25);
+            --hermes-glow-strong: rgba(232, 122, 62, 0.4);
+            --hermes-bg: #FFF5ED;
+            --hermes-gradient: linear-gradient(135deg, #E87A3E 0%, #D0622A 60%, #B8551F 100%);
+            --gold: #C9A84C;
+            --gold-light: #E8D5A3;
+            --gold-bg: #FDF8EE;
+            --dark: #1A1410;
+            --dark-secondary: #2D241E;
+            --text-primary: #1A1410;
+            --text-secondary: #4A3A32;
+            --text-muted: #8A7A72;
+            --bg: #FCF8F5;
+            --white: #FFFFFF;
+            --border: #E8DDD6;
+            --shadow-sm: 0 4px 20px rgba(26, 20, 16, 0.06);
+            --shadow-md: 0 12px 48px rgba(26, 20, 16, 0.08);
+            --shadow-lg: 0 20px 60px rgba(232, 122, 62, 0.15);
+            --shadow-glow: 0 8px 40px rgba(232, 122, 62, 0.2);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xl: 24px;
+            --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            --page-transition-duration: 0.45s;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ================================================================
+               侧边栏 — 深色奢华基底 + 金色/橙色点缀
+               ================================================================ */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1A1410 0%, #2D241E 100%);
+            min-height: 100vh;
+            padding: 32px 20px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+            z-index: 100;
+            transition: var(--transition);
+            border-right: 2px solid rgba(232, 122, 62, 0.15);
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--hermes);
+            border-radius: 4px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 4px 32px 4px;
+            border-bottom: 2px solid rgba(232, 122, 62, 0.2);
+            margin-bottom: 28px;
+            position: relative;
+        }
+        .sidebar-brand::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60px;
+            height: 2px;
+            background: var(--hermes-gradient);
+        }
+        .sidebar-brand .logo {
+            width: 52px;
+            height: 52px;
+            background: var(--hermes-gradient);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            flex-shrink: 0;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(232, 122, 62, 0.3);
+        }
+        .sidebar-brand .brand-text h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+            font-family: 'Playfair Display', serif;
+        }
+        .sidebar-brand .brand-text h1 span {
+            color: var(--hermes);
+        }
+        .sidebar-brand .brand-text .sub {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .sidebar-nav .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 13px 18px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 500;
+            font-size: 14px;
+            text-decoration: none;
+            position: relative;
+            border: 1px solid transparent;
+        }
+        .sidebar-nav .nav-item:hover {
+            background: rgba(232, 122, 62, 0.12);
+            color: rgba(255, 255, 255, 0.8);
+            border-color: rgba(232, 122, 62, 0.15);
+        }
+        .sidebar-nav .nav-item.active {
+            background: rgba(232, 122, 62, 0.18);
+            color: #fff;
+            font-weight: 600;
+            border-color: rgba(232, 122, 62, 0.3);
+            box-shadow: inset 0 0 30px rgba(232, 122, 62, 0.05);
+        }
+        .sidebar-nav .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: -2px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 32px;
+            background: var(--hermes-gradient);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 20px rgba(232, 122, 62, 0.4);
+        }
+        .sidebar-nav .nav-item i {
+            width: 22px;
+            text-align: center;
+            font-size: 17px;
+            flex-shrink: 0;
+            color: var(--hermes);
+            opacity: 0.6;
+        }
+        .sidebar-nav .nav-item.active i {
+            opacity: 1;
+        }
+        .sidebar-nav .nav-item .badge {
+            margin-left: auto;
+            background: var(--hermes-gradient);
+            color: #fff;
+            font-size: 11px;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            box-shadow: 0 2px 12px rgba(232, 122, 62, 0.3);
+        }
+        .sidebar-footer {
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.2);
+            text-align: center;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+        .sidebar-footer i {
+            color: var(--hermes);
+        }
+
+        /* ================================================================
+               主内容区
+               ================================================================ */
+        .main-content {
+            flex: 1;
+            padding: 32px 44px;
+            min-width: 0;
+            overflow-x: hidden;
+            max-width: 1500px;
+            margin: 0 auto;
+            background: var(--bg);
+            position: relative;
+        }
+        .main-content::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(232, 122, 62, 0.03) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ================================================================
+               顶部栏
+               ================================================================ */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 36px;
+            flex-wrap: wrap;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .topbar .page-title h2 {
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            font-family: 'Playfair Display', serif;
+            position: relative;
+        }
+        .topbar .page-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--hermes-gradient);
+            border-radius: 4px;
+        }
+        .topbar .page-title p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-weight: 300;
+        }
+        .topbar .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar .header-date {
+            background: var(--white);
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--border);
+            font-weight: 500;
+        }
+        .topbar .header-date i {
+            color: var(--hermes);
+            font-size: 16px;
+        }
+        .topbar .storage-badge {
+            background: var(--white);
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: var(--text-muted);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+            font-weight: 400;
+        }
+
+        /* ================================================================
+               页面容器 — 丝滑切换动画
+               ================================================================ */
+        .page-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(22px) scale(0.97);
+            animation: none;
+            position: relative;
+            z-index: 1;
+            will-change: transform, opacity;
+        }
+        .page-section.active {
+            display: block;
+            animation: pageFadeIn var(--page-transition-duration) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .page-section.leaving {
+            display: block;
+            animation: pageFadeOut var(--page-transition-duration) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            pointer-events: none;
+        }
+        @keyframes pageFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(28px) scale(0.96);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes pageFadeOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-18px) scale(0.97);
+            }
+        }
+        .page-section.active.no-animate {
+            animation: none;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* ================================================================
+               统计卡片
+               ================================================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 22px;
+            margin-bottom: 36px;
+        }
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--hermes-gradient);
+            opacity: 0.6;
+        }
+        .stat-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+            border-color: var(--hermes-light);
+        }
+        .stat-card .stat-info .num {
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            letter-spacing: -1px;
+            font-family: 'Playfair Display', serif;
+        }
+        .stat-card .stat-info .num .orange {
+            color: var(--hermes);
+        }
+        .stat-card .stat-info .label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        .stat-card .stat-icon {
+            font-size: 34px;
+            opacity: 0.12;
+            color: var(--hermes);
+        }
+
+        /* ================================================================
+               卡片
+               ================================================================ */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 26px 30px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .card-title {
+            font-size: 17px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+            font-family: 'Playfair Display', serif;
+        }
+        .card-title i {
+            color: var(--hermes);
+            font-size: 20px;
+        }
+        .card-title .badge-accent {
+            background: var(--hermes-gradient);
+            color: #fff;
+            font-size: 11px;
+            padding: 3px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-left: auto;
+            box-shadow: 0 2px 12px rgba(232, 122, 62, 0.25);
+            letter-spacing: 0.3px;
+        }
+
+        /* ================================================================
+               学员管理 — 双栏布局
+               ================================================================ */
+        .student-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 26px;
+            min-width: 0;
+        }
+        .student-grid .card:first-child {
+            min-width: 0;
+            overflow: hidden;
+        }
+        .student-grid .card:last-child {
+            min-width: 0;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0 -4px;
+            padding: 0 4px;
+        }
+        .table-wrap table {
+            min-width: 1100px;
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .table-wrap table th,
+        .table-wrap table td {
+            padding: 10px 10px;
+            vertical-align: middle;
+            border-bottom: 1px solid #F0EAE6;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 160px;
+        }
+        .table-wrap table th {
+            background: var(--hermes-bg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--hermes-light);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .table-wrap table td {
+            background: var(--white);
+        }
+        .table-wrap table tr.clickable-row:hover td {
+            background: var(--hermes-bg);
+        }
+        .table-wrap table tr.selected-row td {
+            background: #FFF0E8;
+        }
+        .table-wrap .status-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .status-badge.试听 {
+            background: #F0E6FF;
+            color: #8E44AD;
+        }
+        .status-badge.未成交 {
+            background: #FDE8E8;
+            color: #C0392B;
+        }
+        .status-badge.在读 {
+            background: #E8F8F0;
+            color: #27AE60;
+        }
+        .status-badge.续费 {
+            background: #FFF3E0;
+            color: #E67E22;
+        }
+        .status-badge.转介绍 {
+            background: #E3F0FF;
+            color: #2C6B9E;
+        }
+        .empty-row td {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 56px 0;
+            font-size: 15px;
+            font-weight: 300;
+        }
+
+        /* ================================================================
+               表单
+               ================================================================ */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 12px;
+            min-width: 0;
+        }
+        .form-row.three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        .form-row.five {
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+        }
+        @media (max-width: 1000px) {
+            .form-row.five {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        @media (max-width: 700px) {
+            .form-row.five {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 500px) {
+            .form-row.five {
+                grid-template-columns: 1fr;
+            }
+            .form-row.three {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 0;
+        }
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+            background: var(--bg);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            min-width: 0;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--hermes);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(232, 122, 62, 0.1);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 50px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .form-actions .btn {
+            flex: 1 1 auto;
+            justify-content: center;
+            min-width: 80px;
+        }
+        .edit-hint {
+            font-size: 12px;
+            color: var(--hermes);
+            font-weight: 600;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+
+        /* ================================================================
+               按钮
+               ================================================================ */
+        .btn {
+            padding: 10px 26px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary {
+            background: var(--hermes-gradient);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(232, 122, 62, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(232, 122, 62, 0.4);
+        }
+        .btn-accent {
+            background: var(--hermes-gradient);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(232, 122, 62, 0.3);
+        }
+        .btn-accent:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(232, 122, 62, 0.4);
+        }
+        .btn-success {
+            background: #27AE60;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(39, 174, 96, 0.25);
+        }
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(39, 174, 96, 0.35);
+        }
+        .btn-danger {
+            background: #E74C3C;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.25);
+        }
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(231, 76, 60, 0.35);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-outline:hover {
+            border-color: var(--hermes);
+            color: var(--hermes);
+            background: var(--hermes-bg);
+            transform: translateY(-2px);
+        }
+        .btn-sm {
+            padding: 6px 18px;
+            font-size: 12px;
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* ================================================================
+               搜索框
+               ================================================================ */
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg);
+            border-radius: 30px;
+            padding: 0 18px;
+            border: 1.5px solid var(--border);
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .search-box:focus-within {
+            border-color: var(--hermes);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(232, 122, 62, 0.08);
+        }
+        .search-box input {
+            border: none;
+            background: transparent;
+            padding: 9px 4px;
+            font-size: 13px;
+            outline: none;
+            width: 140px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-width: 60px;
+        }
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+        .search-box i {
+            color: var(--text-muted);
+        }
+
+        /* ================================================================
+               跟进记录
+               ================================================================ */
+        .fu-list {
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+            padding-right: 4px;
+        }
+        .fu-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .fu-list::-webkit-scrollbar-thumb {
+            background: var(--hermes-light);
+            border-radius: 4px;
+        }
+        .fu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            border-left: 4px solid var(--hermes);
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .fu-item .fu-date {
+            font-weight: 600;
+            color: var(--hermes-dark);
+            font-size: 12px;
+            white-space: nowrap;
+            margin-right: 14px;
+        }
+        .fu-item .fu-content {
+            flex: 1;
+            color: var(--text-secondary);
+            min-width: 60px;
+            word-break: break-word;
+        }
+        .fu-item .fu-del {
+            color: var(--text-muted);
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0 4px;
+            font-size: 14px;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .fu-item .fu-del:hover {
+            color: #E74C3C;
+        }
+        .fu-empty {
+            color: var(--text-muted);
+            font-size: 13px;
+            text-align: center;
+            padding: 18px 0;
+            font-weight: 300;
+        }
+        .fu-add {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .fu-add input[type="date"] {
+            padding: 8px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            background: var(--bg);
+            outline: none;
+            width: 150px;
+            color: var(--text-primary);
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            flex-shrink: 0;
+        }
+        .fu-add input[type="text"] {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            background: var(--bg);
+            outline: none;
+            color: var(--text-primary);
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        .fu-add input:focus {
+            border-color: var(--hermes);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(232, 122, 62, 0.08);
+        }
+        .fu-add .btn {
+            flex-shrink: 0;
+        }
+
+        /* ================================================================
+               日历
+               ================================================================ */
+        .cal-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .cal-top .month-year {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+            font-family: 'Playfair Display', serif;
+        }
+        .cal-top .month-year .orange {
+            color: var(--hermes);
+        }
+        .cal-top .cal-nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .cal-top .cal-nav button {
+            background: var(--white);
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 15px;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cal-top .cal-nav button:hover {
+            background: var(--hermes-gradient);
+            color: #fff;
+            border-color: var(--hermes);
+            box-shadow: 0 4px 20px rgba(232, 122, 62, 0.3);
+        }
+        .cal-top .cal-nav .today-btn {
+            width: auto;
+            padding: 0 24px;
+            font-weight: 600;
+            background: var(--hermes-gradient);
+            color: #fff;
+            border-color: var(--hermes);
+            box-shadow: 0 4px 20px rgba(232, 122, 62, 0.3);
+        }
+        .cal-top .cal-nav .today-btn:hover {
+            box-shadow: 0 8px 32px rgba(232, 122, 62, 0.4);
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+        .cal-grid .day-name {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 10px 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .cal-grid .day-cell {
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            min-height: 72px;
+            padding: 6px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 2px;
+            border: 2px solid transparent;
+            box-shadow: var(--shadow-sm);
+        }
+        .cal-grid .day-cell:hover {
+            background: var(--hermes-bg);
+            border-color: var(--hermes-light);
+            transform: scale(1.03);
+            z-index: 2;
+            box-shadow: var(--shadow-glow);
+        }
+        .cal-grid .day-cell.today {
+            background: var(--hermes-gradient);
+            color: #fff;
+            border-color: var(--hermes);
+            box-shadow: 0 4px 24px rgba(232, 122, 62, 0.35);
+        }
+        .cal-grid .day-cell.today .day-number {
+            color: #fff;
+        }
+        .cal-grid .day-cell.today .day-event {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .cal-grid .day-cell.other-month {
+            opacity: 0.3;
+        }
+        .cal-grid .day-cell .day-number {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+        .cal-grid .day-cell .star {
+            color: #F1C40F;
+            font-size: 11px;
+            line-height: 1;
+            margin-top: -2px;
+            text-shadow: 0 0 12px rgba(241, 196, 15, 0.3);
+        }
+        .cal-grid .day-cell .day-event {
+            font-size: 9px;
+            line-height: 1.2;
+            color: var(--hermes);
+            font-weight: 600;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 2px;
+            text-align: center;
+            width: 100%;
+            min-height: 13px;
+        }
+        .cal-grid .day-cell.today .day-event {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* ================================================================
+               班级课堂
+               ================================================================ */
+        .class-toolbar {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            align-items: center;
+        }
+        .class-toolbar input[type="text"] {
+            padding: 9px 20px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            outline: none;
+            background: var(--bg);
+            width: 260px;
+            color: var(--text-primary);
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            flex: 1 1 180px;
+            min-width: 120px;
+        }
+        .class-toolbar input:focus {
+            border-color: var(--hermes);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(232, 122, 62, 0.08);
+        }
+        .class-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .class-list .class-tag {
+            background: var(--white);
+            padding: 8px 22px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-sm);
+        }
+        .class-list .class-tag:hover {
+            background: var(--hermes-bg);
+            border-color: var(--hermes-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .class-list .class-tag.active {
+            border-color: var(--hermes);
+            background: var(--hermes-bg);
+            box-shadow: 0 4px 20px rgba(232, 122, 62, 0.15);
+        }
+        .class-list .class-tag .del-class {
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            background: none;
+            border: none;
+            transition: var(--transition);
+        }
+        .class-list .class-tag .del-class:hover {
+            color: #E74C3C;
+        }
+
+        .class-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 14px;
+        }
+        .class-table-wrap table {
+            font-size: 13px;
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 600px;
+        }
+        .class-table-wrap table th {
+            background: var(--hermes-bg);
+            color: var(--text-secondary);
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+            white-space: nowrap;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .class-table-wrap table td {
+            border: 1px solid var(--border);
+            padding: 6px 4px;
+            text-align: center;
+            vertical-align: middle;
+            background: var(--white);
+        }
+        .class-table-wrap table .stu-name {
+            font-weight: 500;
+            padding: 0 10px;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+        .class-table-wrap table .attendance-cell {
+            cursor: pointer;
+            min-width: 32px;
+            font-size: 18px;
+            font-weight: 700;
+            user-select: none;
+            transition: var(--transition);
+            border-radius: 6px;
+            padding: 4px 0;
+        }
+        .class-table-wrap table .attendance-cell:hover {
+            background: rgba(232, 122, 62, 0.15);
+        }
+        .class-table-wrap table .attendance-cell.present {
+            color: #27AE60;
+        }
+        .class-table-wrap table .attendance-cell.absent {
+            color: #E74C3C;
+        }
+        .class-table-wrap table .attendance-cell.other {
+            color: var(--hermes);
+        }
+        .class-table-wrap table .attendance-cell.empty {
+            color: var(--text-muted);
+        }
+        .class-table-wrap table .del-student {
+            color: var(--text-muted);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 15px;
+            transition: var(--transition);
+        }
+        .class-table-wrap table .del-student:hover {
+            color: #E74C3C;
+        }
+
+        /* ================================================================
+               弹出层
+               ================================================================ */
+        #attendancePopup {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 24px 32px;
+            min-width: 210px;
+            border: 2px solid var(--hermes-light);
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            backdrop-filter: blur(10px);
+        }
+        #attendancePopup .popup-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'Playfair Display', serif;
+        }
+        #attendancePopup .popup-buttons {
+            display: flex;
+            gap: 20px;
+        }
+        #attendancePopup .popup-buttons button {
+            font-size: 30px;
+            width: 64px;
+            height: 64px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+        }
+        #attendancePopup .popup-buttons .btn-present {
+            background: #E8F8F0;
+            color: #27AE60;
+        }
+        #attendancePopup .popup-buttons .btn-present:hover {
+            background: #27AE60;
+            color: #fff;
+            transform: scale(1.08);
+            box-shadow: 0 8px 24px rgba(39, 174, 96, 0.3);
+        }
+        #attendancePopup .popup-buttons .btn-absent {
+            background: #FDE8E8;
+            color: #E74C3C;
+        }
+        #attendancePopup .popup-buttons .btn-absent:hover {
+            background: #E74C3C;
+            color: #fff;
+            transform: scale(1.08);
+            box-shadow: 0 8px 24px rgba(231, 76, 60, 0.3);
+        }
+        #attendancePopup .popup-buttons .btn-other {
+            background: var(--hermes-bg);
+            color: var(--hermes);
+        }
+        #attendancePopup .popup-buttons .btn-other:hover {
+            background: var(--hermes);
+            color: #fff;
+            transform: scale(1.08);
+            box-shadow: 0 8px 24px rgba(232, 122, 62, 0.3);
+        }
+
+        .cal-event-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 20, 16, 0.4);
+            backdrop-filter: blur(6px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        .cal-event-popup.show {
+            display: flex;
+        }
+        .cal-event-popup .popup-box {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 36px 40px;
+            max-width: 460px;
+            width: 92%;
+            box-shadow: var(--shadow-lg);
+            animation: popIn 0.35s ease;
+            border-top: 6px solid var(--hermes);
+        }
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .cal-event-popup .popup-box h3 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-primary);
+            font-family: 'Playfair Display', serif;
+        }
+        .cal-event-popup .popup-box h3 i {
+            color: var(--hermes);
+        }
+        .cal-event-popup .popup-box .event-list-pop {
+            max-height: 190px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+        .cal-event-popup .popup-box .event-item-pop {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            font-size: 14px;
+            border-left: 3px solid var(--hermes);
+        }
+        .cal-event-popup .popup-box .event-item-pop .del-e {
+            color: var(--text-muted);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 15px;
+            transition: var(--transition);
+        }
+        .cal-event-popup .popup-box .event-item-pop .del-e:hover {
+            color: #E74C3C;
+        }
+        .cal-event-popup .popup-box .add-event-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .cal-event-popup .popup-box .add-event-row input {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px 18px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            outline: none;
+            color: var(--text-primary);
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        .cal-event-popup .popup-box .add-event-row input:focus {
+            border-color: var(--hermes);
+            box-shadow: 0 0 0 4px rgba(232, 122, 62, 0.08);
+        }
+        .cal-event-popup .popup-box .pop-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+            justify-content: flex-end;
+        }
+
+        /* ================================================================
+               Toast
+               ================================================================ */
+        .toast {
+            position: fixed;
+            bottom: 36px;
+            right: 36px;
+            background: var(--dark);
+            color: #fff;
+            padding: 16px 36px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-lg);
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 14px;
+            z-index: 1100;
+            font-size: 14px;
+            border: 1px solid rgba(232, 122, 62, 0.2);
+        }
+        .toast.show {
+            display: flex;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .toast i {
+            font-size: 20px;
+            color: var(--hermes);
+        }
+
+        /* ================================================================
+               数据同步页面
+               ================================================================ */
+        .sync-textarea {
+            width: 100%;
+            min-height: 280px;
+            padding: 18px 20px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: 'Inter', monospace;
+            background: var(--bg);
+            color: var(--text-primary);
+            resize: vertical;
+            transition: var(--transition);
+            line-height: 1.6;
+            tab-size: 2;
+        }
+        .sync-textarea:focus {
+            border-color: var(--hermes);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(232, 122, 62, 0.08);
+            outline: none;
+        }
+        .sync-textarea::placeholder {
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+        }
+        .sync-actions {
+            display: flex;
+            gap: 14px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+        .sync-actions .btn {
+            flex: 1 1 auto;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .sync-info {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            padding: 12px 18px;
+            background: var(--hermes-bg);
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--hermes);
+        }
+        .sync-info i {
+            color: var(--hermes);
+            margin-right: 8px;
+        }
+        .sync-status {
+            margin-top: 12px;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            display: none;
+        }
+        .sync-status.success {
+            display: block;
+            background: #E8F8F0;
+            color: #27AE60;
+            border: 1px solid #A9DFBF;
+        }
+        .sync-status.error {
+            display: block;
+            background: #FDE8E8;
+            color: #C0392B;
+            border: 1px solid #F5B7B1;
+        }
+        .sync-status.info {
+            display: block;
+            background: #E3F0FF;
+            color: #2C6B9E;
+            border: 1px solid #A9CCE3;
+        }
+
+        /* ================================================================
+               工具类
+               ================================================================ */
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .text-muted {
+            color: var(--text-muted);
+        }
+        .text-sm {
+            font-size: 12px;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .hermes-border {
+            border-color: var(--hermes-light);
+        }
+
+        /* ================================================================
+               响应式
+               ================================================================ */
+        @media (max-width: 1200px) {
+            .student-grid {
+                grid-template-columns: 1fr;
+                gap: 22px;
+            }
+            .student-grid .card:first-child .table-wrap table {
+                min-width: 1000px;
+            }
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 80px;
+                padding: 20px 12px;
+            }
+            .sidebar-brand .brand-text,
+            .sidebar-nav .nav-item span,
+            .sidebar-nav .nav-item .badge,
+            .sidebar-footer {
+                display: none;
+            }
+            .sidebar-nav .nav-item {
+                justify-content: center;
+                padding: 14px;
+                font-size: 18px;
+            }
+            .sidebar-nav .nav-item i {
+                width: auto;
+                font-size: 22px;
+                opacity: 0.7;
+            }
+            .sidebar-nav .nav-item.active::before {
+                display: none;
+            }
+            .sidebar-brand {
+                justify-content: center;
+                padding-bottom: 20px;
+            }
+            .sidebar-brand .logo {
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+            .main-content {
+                padding: 20px 24px;
+            }
+            .form-row.five {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+        @media (max-width: 820px) {
+            .form-row.five {
+                grid-template-columns: 1fr 1fr;
+            }
+            .form-row.three {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+            }
+            .cal-grid .day-cell {
+                min-height: 56px;
+                padding: 4px 2px;
+            }
+            .cal-grid .day-cell .day-number {
+                font-size: 14px;
+            }
+            .cal-grid .day-cell .day-event {
+                font-size: 8px;
+                min-height: 10px;
+            }
+            .student-grid .card:first-child .table-wrap table {
+                min-width: 900px;
+            }
+            .sync-textarea {
+                min-height: 200px;
+            }
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 64px;
+                padding: 14px 8px;
+            }
+            .sidebar-nav .nav-item {
+                padding: 10px;
+                font-size: 16px;
+            }
+            .sidebar-nav .nav-item i {
+                font-size: 18px;
+            }
+            .sidebar-brand .logo {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+            .main-content {
+                padding: 16px 18px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .stat-card .stat-info .num {
+                font-size: 24px;
+            }
+            .form-row,
+            .form-row.three {
+                grid-template-columns: 1fr;
+            }
+            .form-row.five {
+                grid-template-columns: 1fr 1fr;
+            }
+            .topbar .page-title h2 {
+                font-size: 22px;
+            }
+            .cal-grid .day-cell {
+                min-height: 48px;
+                padding: 3px 2px;
+            }
+            .cal-grid .day-cell .day-number {
+                font-size: 13px;
+            }
+            .cal-grid .day-cell .day-event {
+                font-size: 8px;
+                min-height: 10px;
+            }
+            .class-table-wrap table th,
+            .class-table-wrap table td {
+                font-size: 11px;
+                padding: 4px 2px;
+            }
+            .class-table-wrap table .attendance-cell {
+                font-size: 15px;
+                min-width: 24px;
+            }
+            #attendancePopup .popup-buttons button {
+                width: 52px;
+                height: 52px;
+                font-size: 24px;
+            }
+            .search-box input {
+                width: 100px;
+            }
+            .student-grid .card:first-child .table-wrap table {
+                min-width: 800px;
+            }
+            .fu-add input[type="date"] {
+                width: 130px;
+            }
+            .sync-textarea {
+                min-height: 160px;
+                font-size: 12px;
+            }
+            .sync-actions .btn {
+                min-width: 80px;
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+        }
+        @media (max-width: 550px) {
+            .form-row.five {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                width: 52px;
+                padding: 10px 4px;
+            }
+            .sidebar-nav .nav-item {
+                padding: 8px;
+                font-size: 14px;
+            }
+            .sidebar-nav .nav-item i {
+                font-size: 16px;
+            }
+            .sidebar-brand .logo {
+                width: 32px;
+                height: 32px;
+                font-size: 13px;
+                border-radius: 10px;
+            }
+            .cal-grid .day-cell {
+                min-height: 40px;
+                padding: 2px 1px;
+            }
+            .cal-grid .day-cell .day-number {
+                font-size: 11px;
+            }
+            .cal-grid .day-cell .day-event {
+                font-size: 7px;
+                min-height: 9px;
+            }
+            .cal-grid .day-cell .star {
+                font-size: 8px;
+            }
+            .class-table-wrap table th,
+            .class-table-wrap table td {
+                font-size: 10px;
+                padding: 2px 1px;
+            }
+            .class-table-wrap table .attendance-cell {
+                font-size: 12px;
+                min-width: 18px;
+            }
+            #attendancePopup .popup-buttons button {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+            }
+            .topbar .header-date {
+                font-size: 11px;
+                padding: 6px 14px;
+            }
+            .topbar .storage-badge {
+                font-size: 10px;
+                padding: 6px 14px;
+            }
+            .cal-event-popup .popup-box {
+                padding: 24px 20px;
+            }
+            .student-grid .card:first-child .table-wrap table {
+                min-width: 700px;
+            }
+            .fu-add {
+                flex-direction: column;
+            }
+            .fu-add input[type="date"],
+            .fu-add input[type="text"] {
+                width: 100%;
+            }
+            .sync-textarea {
+                min-height: 140px;
+                font-size: 11px;
+                padding: 12px 14px;
+            }
+            .sync-actions {
+                flex-direction: column;
+            }
+            .sync-actions .btn {
+                width: 100%;
+            }
+        }
+        @media (max-width: 400px) {
+            .main-content {
+                padding: 12px 10px;
+            }
+            .card {
+                padding: 16px 14px;
+            }
+            .topbar .page-title h2 {
+                font-size: 18px;
+            }
+            .topbar .page-title h2::after {
+                width: 40px;
+            }
+            .stat-card {
+                padding: 16px 18px;
+            }
+            .stat-card .stat-info .num {
+                font-size: 20px;
+            }
+            .table-wrap table {
+                font-size: 11px;
+                min-width: 600px;
+            }
+            .table-wrap table th,
+            .table-wrap table td {
+                padding: 6px 6px;
+            }
+            .search-box input {
+                width: 70px;
+                font-size: 12px;
+            }
+            .btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            .btn-sm {
+                padding: 4px 12px;
+                font-size: 11px;
+            }
+            .cal-grid .day-cell {
+                min-height: 34px;
+            }
+            .cal-grid .day-cell .day-number {
+                font-size: 10px;
+            }
+            .cal-grid .day-cell .day-event {
+                font-size: 6px;
+                min-height: 8px;
+            }
+            #attendancePopup {
+                padding: 16px 20px;
+                min-width: 160px;
+            }
+            #attendancePopup .popup-buttons button {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 侧边栏 ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo">莞</div>
+            <div class="brand-text">
+                <h1>莞邑<span>之声</span></h1>
+                <div class="sub">语言艺术 · 教务管理</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-page="dashboard">
+                <i class="fas fa-chart-pie"></i>
+                <span>总览</span>
+            </div>
+            <div class="nav-item" data-page="students">
+                <i class="fas fa-user-graduate"></i>
+                <span>学员管理</span>
+                <span class="badge" id="studentCountBadge">0</span>
+            </div>
+            <div class="nav-item" data-page="calendar">
+                <i class="fas fa-calendar-alt"></i>
+                <span>日历日程</span>
+            </div>
+            <div class="nav-item" data-page="classes">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>班级课堂</span>
+            </div>
+            <div class="nav-item" data-page="sync">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>数据同步</span>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <i class="fas fa-microphone-alt"></i> 莞邑之声 v3.0
+        </div>
+    </aside>
+
+    <!-- ===== 主内容 ===== -->
+    <main class="main-content">
+
+        <!-- ===== 顶部栏 ===== -->
+        <div class="topbar">
+            <div class="page-title">
+                <h2 id="pageTitle">📊 总览</h2>
+                <p id="pageSubtitle">校区运营数据 · 一览无余</p>
+            </div>
+            <div class="header-right">
+                <div class="header-date"><i class="fas fa-calendar-alt"></i> <span id="headerDate"></span></div>
+                <div class="storage-badge"><i class="fas fa-database"></i> 本地存储</div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 页面：总览 -->
+        <!-- ============================================================ -->
+        <div class="page-section active no-animate" id="page-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info"><div class="num" id="totalStudents">0</div><div class="label">👥 总学员</div></div>
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info"><div class="num" id="todayFollow">0</div><div class="label">📅 今日需跟进</div></div>
+                    <div class="stat-icon"><i class="fas fa-phone"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info"><div class="num" id="trialCount">0</div><div class="label">🎤 试听 / 未成交</div></div>
+                    <div class="stat-icon"><i class="fas fa-headset"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info"><div class="num" id="activeCount">0</div><div class="label">⭐ 在读 / 续费 / 转介绍</div></div>
+                    <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;">
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-clock"></i> 最近动态 <span class="badge-accent">实时</span></div>
+                    <div style="color:var(--text-secondary);font-size:14px;padding:10px 0;" id="recentActivity">
+                        <p><i class="fas fa-circle" style="color:#27AE60;font-size:8px;"></i> 系统已就绪，请开始管理学员</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-bullhorn"></i> 快捷操作</div>
+                    <div style="display:flex;gap:14px;flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="navigateTo('students')"><i class="fas fa-user-plus"></i> 录入学员</button>
+                        <button class="btn btn-accent" onclick="navigateTo('classes')"><i class="fas fa-chalkboard"></i> 课堂登记</button>
+                        <button class="btn btn-outline" onclick="navigateTo('calendar')"><i class="fas fa-calendar"></i> 查看日程</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 页面：学员管理 -->
+        <!-- ============================================================ -->
+        <div class="page-section" id="page-students">
+            <div class="student-grid">
+                <div class="card">
+                    <div class="flex-between mb-8">
+                        <div class="card-title" style="margin-bottom:0;"><i class="fas fa-list"></i> 学员列表 <span id="listCount" style="font-size:13px;font-weight:400;color:var(--text-muted);"></span></div>
+                        <div class="flex-center gap-8">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchInput" placeholder="搜索姓名/电话" />
+                            </div>
+                            <button class="btn btn-success btn-sm" id="exportExcel"><i class="fas fa-file-excel"></i> 导出</button>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>姓名</th><th>年龄</th><th>电话</th><th>课程</th><th>状态</th><th>学期</th><th>学校</th><th>作品</th><th>金额</th><th>演出</th><th>跟进日</th><th>录入</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody">
+                                <tr class="empty-row"><td colspan="12">📭 暂无学员，请录入</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:14px;font-size:12px;color:var(--text-muted);display:flex;gap:18px;flex-wrap:wrap;">
+                        <span><i class="fas fa-mouse-pointer"></i> 点击行加载编辑</span>
+                        <span><i class="fas fa-star" style="color:#F1C40F;"></i> 星标 = 学员录入日</span>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:22px;min-width:0;">
+                    <div class="card">
+                        <div class="card-title" style="margin-bottom:14px;">
+                            <i class="fas fa-user-edit"></i> <span id="formTitle">录入学员</span>
+                            <span class="edit-hint" id="editHint"></span>
+                        </div>
+                        <form id="studentForm" autocomplete="off">
+                            <div class="form-row">
+                                <div class="form-group"><label>姓名 *</label><input type="text" id="sName" placeholder="姓名" required /></div>
+                                <div class="form-group"><label>年龄</label><input type="number" id="sAge" placeholder="4-12" min="3" max="15" /></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>电话</label><input type="text" id="sPhone" placeholder="手机号" /></div>
+                                <div class="form-group"><label>意向课程</label>
+                                    <select id="sCourse">
+                                        <option value="口才">口才</option><option value="朗诵">朗诵</option>
+                                        <option value="主持">主持</option><option value="舞台赛事">舞台赛事</option>
+                                        <option value="考级">考级</option><option value="央视录制">央视录制</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row three">
+                                <div class="form-group"><label>状态</label>
+                                    <select id="sStatus">
+                                        <option value="试听">🎧 试听</option><option value="未成交">❌ 未成交</option>
+                                        <option value="在读">📚 在读</option><option value="续费">🔄 续费</option>
+                                        <option value="转介绍">🤝 转介绍</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>来源</label>
+                                    <select id="sSource">
+                                        <option value="上门">上门</option><option value="线上咨询">线上咨询</option>
+                                        <option value="转介绍">转介绍</option><option value="地推">地推</option><option value="社群">社群</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>跟进日期</label><input type="date" id="sFollowDate" /></div>
+                            </div>
+                            <div class="form-row five">
+                                <div class="form-group"><label>学期选择</label>
+                                    <select id="sSemester">
+                                        <option value="全年">全年</option><option value="半年">半年</option><option value="学期">学期</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>就读学校</label><input type="text" id="sSchool" placeholder="学校名称" /></div>
+                                <div class="form-group"><label>金额</label><input type="text" id="sAmount" placeholder="金额" /></div>
+                                <div class="form-group"><label>参加演出</label><input type="text" id="sPerformance" placeholder="演出名称" /></div>
+                                <div class="form-group"><label>学期作品</label><input type="text" id="sWork" placeholder="作品名称" /></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>备注</label><textarea id="sNote" placeholder="试听反馈、沟通记录…" rows="2"></textarea></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>📌 补充说明</label><textarea id="sExtra" placeholder="需要补充的信息、待办事项…" rows="2"></textarea></div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" id="submitBtn"><i class="fas fa-save"></i> 保存</button>
+                                <button type="reset" class="btn btn-outline"><i class="fas fa-undo"></i> 清空</button>
+                                <button type="button" class="btn btn-danger btn-sm" id="deleteBtn" style="display:none;"><i class="fas fa-trash"></i> 删除</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <div class="flex-between mb-8">
+                            <span class="card-title" style="margin-bottom:0;font-size:15px;"><i class="fas fa-history"></i> 跟进记录 <span id="fuCount" style="font-weight:400;font-size:13px;color:var(--text-muted);"></span></span>
+                            <span style="font-size:12px;color:var(--text-muted);">跟进速度 = 记录频率</span>
+                        </div>
+                        <div class="fu-list" id="fuList"><div class="fu-empty">暂无跟进记录，添加第一条吧</div></div>
+                        <div class="fu-add">
+                            <input type="date" id="fuDate" />
+                            <input type="text" id="fuContent" placeholder="跟进内容…" />
+                            <button class="btn btn-accent btn-sm" id="addFuBtn"><i class="fas fa-plus"></i> 添加</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 页面：日历日程 -->
+        <!-- ============================================================ -->
+        <div class="page-section" id="page-calendar">
+            <div class="card">
+                <div class="cal-top">
+                    <div class="month-year" id="calMonthYear">2026年6月</div>
+                    <div class="cal-nav">
+                        <button id="calPrev"><i class="fas fa-chevron-left"></i></button>
+                        <button class="today-btn" id="calToday">今天</button>
+                        <button id="calNext"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="cal-grid" id="calGrid"></div>
+                <div style="margin-top:16px;font-size:12px;color:var(--text-muted);display:flex;gap:22px;flex-wrap:wrap;">
+                    <span><i class="fas fa-star" style="color:#F1C40F;"></i> 星标 = 学员录入日</span>
+                    <span style="color:var(--hermes);"><i class="fas fa-circle" style="color:var(--hermes);font-size:10px;"></i> 橙色文字 = 当日活动</span>
+                    <span><i class="fas fa-mouse-pointer"></i> 点击日期添加/编辑活动</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 页面：班级课堂 -->
+        <!-- ============================================================ -->
+        <div class="page-section" id="page-classes">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-chalkboard-teacher"></i> 班级课堂登记
+                    <span style="font-size:13px;font-weight:400;color:var(--text-muted);margin-left:12px;">每学期20次课 · 点击空白格选择 ✔ ✘ O</span>
+                </div>
+                <div class="class-toolbar">
+                    <input type="text" id="newClassName" placeholder="输入班级名称，如：口才1班" />
+                    <button class="btn btn-primary" id="addClassBtn"><i class="fas fa-plus"></i> 添加班级</button>
+                    <span style="font-size:12px;color:var(--text-muted);margin-left:4px;">添加后自动生成20列课次</span>
+                </div>
+                <div class="class-list" id="classListContainer"></div>
+                <div id="classDetailContainer">
+                    <div style="color:var(--text-muted);text-align:center;padding:48px 0;font-size:15px;font-weight:300;">请选择或添加一个班级</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 页面：数据同步 (新增) -->
+        <!-- ============================================================ -->
+        <div class="page-section" id="page-sync">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-cloud-upload-alt"></i> 数据同步
+                    <span class="badge-accent">跨设备迁移</span>
+                </div>
+                <div class="sync-info">
+                    <i class="fas fa-info-circle"></i>
+                    导出当前所有数据（学员、日历、班级），敏感信息（姓名、电话）将自动脱敏。复制文本后，在另一台设备的此页面粘贴并导入，即可完成数据同步。
+                </div>
+                <textarea class="sync-textarea" id="syncTextarea" placeholder="点击「导出数据」生成同步文本，或粘贴从其他设备复制的同步文本后点击「导入数据」…"></textarea>
+                <div class="sync-actions">
+                    <button class="btn btn-primary" id="syncExportBtn"><i class="fas fa-download"></i> 导出数据</button>
+                    <button class="btn btn-accent" id="syncCopyBtn"><i class="fas fa-copy"></i> 复制文本</button>
+                    <button class="btn btn-success" id="syncImportBtn"><i class="fas fa-upload"></i> 导入数据</button>
+                    <button class="btn btn-outline" id="syncClearBtn"><i class="fas fa-eraser"></i> 清空</button>
+                </div>
+                <div class="sync-status" id="syncStatus"></div>
+                <div style="margin-top:14px;font-size:12px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:14px;display:flex;gap:20px;flex-wrap:wrap;">
+                    <span><i class="fas fa-user-secret" style="color:var(--hermes);"></i> 脱敏规则：姓名保留首字，电话保留前3后4位</span>
+                    <span><i class="fas fa-database" style="color:var(--hermes);"></i> 导入将覆盖当前所有数据，请谨慎操作</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ===== 出勤弹出层 ===== -->
+    <div id="attendancePopup">
+        <div class="popup-label">选择出勤状态</div>
+        <div class="popup-buttons">
+            <button class="btn-present" id="popupPresent">✔</button>
+            <button class="btn-absent" id="popupAbsent">✘</button>
+            <button class="btn-other" id="popupOther">O</button>
+        </div>
+    </div>
+
+    <!-- ===== 日历活动弹窗 ===== -->
+    <div class="cal-event-popup" id="calPopup">
+        <div class="popup-box">
+            <h3><i class="fas fa-calendar-plus"></i> <span id="popupDateLabel">2026-06-20</span> 活动</h3>
+            <div class="event-list-pop" id="popupEventList"><div style="color:var(--text-muted);text-align:center;padding:12px 0;">暂无活动</div></div>
+            <div class="add-event-row">
+                <input type="text" id="popupEventInput" placeholder="输入活动内容…" />
+                <button class="btn btn-primary btn-sm" id="popupAddEvent"><i class="fas fa-plus"></i> 添加</button>
+            </div>
+            <div class="pop-actions">
+                <button class="btn btn-outline btn-sm" id="popupClose">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Toast ===== -->
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            //  数据
+            // ============================================================
+            let students = [];
+            let editingId = null;
+            let calendarEvents = {};
+            let classesData = {};
+            let currentClassId = null;
+            const DEFAULT_LESSONS = 20;
+
+            let calYear = new Date().getFullYear();
+            let calMonth = new Date().getMonth();
+            let popupTarget = null;
+            let popupDateKey = '';
+
+            let isTransitioning = false;
+
+            // ============================================================
+            //  DOM
+            // ============================================================
+            const $ = id => document.getElementById(id);
+            const sName = $('sName'),
+                sAge = $('sAge'),
+                sPhone = $('sPhone');
+            const sCourse = $('sCourse'),
+                sStatus = $('sStatus'),
+                sSource = $('sSource');
+            const sFollowDate = $('sFollowDate'),
+                sNote = $('sNote'),
+                sExtra = $('sExtra');
+            const sSemester = $('sSemester'),
+                sSchool = $('sSchool'),
+                sAmount = $('sAmount'),
+                sPerformance = $('sPerformance'),
+                sWork = $('sWork');
+            const form = $('studentForm'),
+                submitBtn = $('submitBtn'),
+                deleteBtn = $('deleteBtn');
+            const editHint = $('editHint'),
+                formTitle = $('formTitle');
+            const tbody = $('studentTableBody'),
+                listCount = $('listCount');
+            const searchInput = $('searchInput');
+            const fuList = $('fuList'),
+                fuCount = $('fuCount');
+            const fuDate = $('fuDate'),
+                fuContent = $('fuContent'),
+                addFuBtn = $('addFuBtn');
+            const calGrid = $('calGrid'),
+                calMonthYear = $('calMonthYear');
+            const calPrev = $('calPrev'),
+                calNext = $('calNext'),
+                calToday = $('calToday');
+            const calPopup = $('calPopup'),
+                popupDateLabel = $('popupDateLabel');
+            const popupEventList = $('popupEventList'),
+                popupEventInput = $('popupEventInput');
+            const popupAddEvent = $('popupAddEvent'),
+                popupClose = $('popupClose');
+            const toast = $('toast'),
+                toastMsg = $('toastMsg');
+            const exportBtn = $('exportExcel');
+            const newClassName = $('newClassName');
+            const addClassBtn = $('addClassBtn');
+            const classListContainer = $('classListContainer');
+            const classDetailContainer = $('classDetailContainer');
+            const attendancePopup = $('attendancePopup');
+            const popupPresent = $('popupPresent'),
+                popupAbsent = $('popupAbsent'),
+                popupOther = $('popupOther');
+
+            // 数据同步 DOM
+            const syncTextarea = $('syncTextarea');
+            const syncExportBtn = $('syncExportBtn');
+            const syncCopyBtn = $('syncCopyBtn');
+            const syncImportBtn = $('syncImportBtn');
+            const syncClearBtn = $('syncClearBtn');
+            const syncStatus = $('syncStatus');
+
+            // ============================================================
+            //  工具
+            // ============================================================
+            function formatDateKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+            function getTodayStr() { const d = new Date(); return formatDateKey(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+            function getTodayDate() { const d = new Date(); return { year: d.getFullYear(), month: d.getMonth(), day: d
+                        .getDate() }; }
+
+            function parseDateKey(key) { const p = key.split('-').map(Number); return { year: p[0], month: p[1] - 1, day: p[
+                        2] }; }
+
+            function genId() { return Date.now() + '_' + Math.random().toString(36).substr(2, 6); }
+
+            function formatDateDisplay(s) { if (!s) return '-'; const p = s.split('-'); return `${p[0]}年${parseInt(p[1])}月${parseInt(p[2])}日`; }
+
+            // ============================================================
+            //  脱敏工具
+            // ============================================================
+            function maskName(name) {
+                if (!name || name.length === 0) return '';
+                if (name.length === 1) return name;
+                return name.charAt(0) + '*'.repeat(name.length - 1);
+            }
+
+            function maskPhone(phone) {
+                if (!phone || phone.length < 7) return phone || '';
+                const s = phone.replace(/\s/g, '');
+                if (s.length <= 4) return s;
+                if (s.length <= 7) return s.slice(0, 2) + '****' + s.slice(-2);
+                return s.slice(0, 3) + '****' + s.slice(-4);
+            }
+
+            // 深度脱敏数据
+            function desensitizeData(data) {
+                const result = JSON.parse(JSON.stringify(data));
+
+                // 脱敏学员
+                if (result.students && Array.isArray(result.students)) {
+                    result.students = result.students.map(s => {
+                        const copy = { ...s };
+                        if (copy.name) copy.name = maskName(copy.name);
+                        if (copy.phone) copy.phone = maskPhone(copy.phone);
+                        return copy;
+                    });
+                }
+
+                // 脱敏班级中的学生姓名
+                if (result.classesData && typeof result.classesData === 'object') {
+                    for (let clsId in result.classesData) {
+                        const cls = result.classesData[clsId];
+                        if (cls.students && Array.isArray(cls.students)) {
+                            cls.students = cls.students.map(stu => {
+                                const copy = { ...stu };
+                                if (copy.name) copy.name = maskName(copy.name);
+                                return copy;
+                            });
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            // ============================================================
+            //  存储
+            // ============================================================
+            function saveStudents() { try { localStorage.setItem('gyzs_students', JSON.stringify(students)); } catch (e) {} }
+
+            function loadStudents() { try { const d = localStorage.getItem('gyzs_students'); if (d) { students = JSON.parse(
+                        d); if (!Array.isArray(students)) students = []; } } catch (e) { students = []; } }
+
+            function saveCalendarEvents() { try { localStorage.setItem('gyzs_cal_events', JSON.stringify(
+                    calendarEvents)); } catch (e) {} }
+
+            function loadCalendarEvents() { try { const d = localStorage.getItem('gyzs_cal_events'); if (d) { calendarEvents =
+                        JSON.parse(d); if (typeof calendarEvents !== 'object') calendarEvents = {}; } } catch (e) { calendarEvents =
+                        {}; } }
+
+            function saveClasses() { try { localStorage.setItem('gyzs_classes', JSON.stringify(classesData)); } catch (e) {} }
+
+            function loadClasses() {
+                try { const d = localStorage.getItem('gyzs_classes'); if (d) { classesData = JSON.parse(d); if (typeof classesData !==
+                            'object') classesData = {}; } } catch (e) { classesData = {}; }
+                for (let id in classesData) {
+                    if (!classesData[id].students) classesData[id].students = [];
+                    if (!classesData[id].totalLessons) classesData[id].totalLessons = DEFAULT_LESSONS;
+                    const total = classesData[id].totalLessons;
+                    classesData[id].students.forEach(stu => {
+                        if (!stu.attendance || stu.attendance.length !== total) {
+                            const old = stu.attendance || [];
+                            stu.attendance = [];
+                            for (let i = 0; i < total; i++) { stu.attendance.push(i < old.length ? old[i] : null); }
+                        } else {
+                            stu.attendance = stu.attendance.map(v => {
+                                if (v === true) return 'present';
+                                if (v === false) return 'absent';
+                                if (v === 'present' || v === 'absent' || v === 'other') return v;
+                                return null;
+                            });
+                        }
+                    });
+                }
+            }
+
+            // ============================================================
+            //  Toast & 导航
+            // ============================================================
+            function showToast(msg, type = 'success') {
+                toastMsg.textContent = msg;
+                toast.className = 'toast show';
+                toast.style.background = type === 'warning' ? '#E67E22' : '#1A1410';
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(() => toast.classList.remove('show'), 2600);
+            }
+
+            function navigateTo(page) {
+                if (isTransitioning) return;
+                const current = document.querySelector('.page-section.active:not(.no-animate)');
+                const target = document.getElementById('page-' + page);
+                if (!target || current === target) return;
+                if (target.classList.contains('active') && !target.classList.contains('no-animate')) return;
+
+                isTransitioning = true;
+                document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => el.classList.remove('active'));
+                const navItem = document.querySelector(`.sidebar-nav .nav-item[data-page="${page}"]`);
+                if (navItem) navItem.classList.add('active');
+
+                const titles = {
+                    dashboard: ['📊 总览', '校区运营数据 · 一览无余'],
+                    students: ['👥 学员管理', '录入 · 编辑 · 跟进学员信息'],
+                    calendar: ['📅 日历日程', '查看和管理每日活动安排'],
+                    classes: ['🏫 班级课堂', '班级出勤登记与考勤统计'],
+                    sync: ['🔄 数据同步', '跨设备数据迁移 · 脱敏导出与导入']
+                };
+                const t = titles[page] || ['页面', ''];
+                document.getElementById('pageTitle').textContent = t[0];
+                document.getElementById('pageSubtitle').textContent = t[1];
+
+                if (current) {
+                    current.classList.remove('active');
+                    current.classList.add('leaving');
+                    const exitDuration = parseFloat(getComputedStyle(document.documentElement)
+                        .getPropertyValue('--page-transition-duration').replace('s', '')) * 1000 || 450;
+                    setTimeout(() => {
+                        current.style.display = 'none';
+                        current.classList.remove('leaving');
+                        target.style.display = 'block';
+                        void target.offsetHeight;
+                        target.classList.add('active');
+                        target.classList.remove('no-animate');
+                        setTimeout(() => { isTransitioning = false; }, exitDuration);
+                    }, exitDuration);
+                } else {
+                    target.style.display = 'block';
+                    target.classList.add('active');
+                    target.classList.remove('no-animate');
+                    isTransitioning = false;
+                }
+            }
+
+            window.navigateTo = navigateTo;
+
+            document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    if (page) navigateTo(page);
+                });
+            });
+
+            // ============================================================
+            //  统计
+            // ============================================================
+            function updateStats() {
+                const total = students.length;
+                document.getElementById('totalStudents').textContent = total;
+                document.getElementById('studentCountBadge').textContent = total;
+                const today = getTodayStr();
+                const need = students.filter(s => s.followDate === today).length;
+                document.getElementById('todayFollow').textContent = need;
+                const trial = students.filter(s => s.status === '未成交' || s.status === '试听').length;
+                document.getElementById('trialCount').textContent = trial;
+                const active = students.filter(s => s.status === '在读' || s.status === '续费' || s.status === '转介绍')
+                .length;
+                document.getElementById('activeCount').textContent = active;
+                const recent = document.getElementById('recentActivity');
+                if (students.length > 0) {
+                    const last = students[students.length - 1];
+                    recent.innerHTML =
+                        `<p><i class="fas fa-circle" style="color:#27AE60;font-size:8px;"></i> 最新学员：<strong>${last.name}</strong> 于 ${formatDateDisplay(last.createDate)} 录入</p>`;
+                } else {
+                    recent.innerHTML = `<p><i class="fas fa-circle" style="color:#27AE60;font-size:8px;"></i> 系统已就绪，请开始管理学员</p>`;
+                }
+            }
+
+            // ============================================================
+            //  学员列表
+            // ============================================================
+            function renderList(filter = '') {
+                let list = students;
+                if (filter.trim()) {
+                    const f = filter.trim().toLowerCase();
+                    list = students.filter(s => s.name.toLowerCase().includes(f) || (s.phone && s.phone.includes(f)));
+                }
+                if (list.length === 0) {
+                    tbody.innerHTML = `<tr class="empty-row"><td colspan="12">📭 暂无匹配学员</td></tr>`;
+                    listCount.textContent = '(0)';
+                    return;
+                }
+                let html = '';
+                list.forEach((s, idx) => {
+                    const realIdx = students.indexOf(s);
+                    const statusCls = s.status || '试听';
+                    const followDate = s.followDate ? formatDateDisplay(s.followDate) : '-';
+                    const createDate = s.createDate ? formatDateDisplay(s.createDate) : '-';
+                    html += `
+                        <tr class="clickable-row" data-idx="${realIdx}">
+                            <td><strong>${s.name}</strong></td>
+                            <td>${s.age || '-'}</td>
+                            <td>${s.phone || '-'}</td>
+                            <td>${s.course || '口才'}</td>
+                            <td><span class="status-badge ${statusCls}">${statusCls}</span></td>
+                            <td>${s.semester || '全年'}</td>
+                            <td>${s.school || '-'}</td>
+                            <td>${s.work || '-'}</td>
+                            <td>${s.amount || '-'}</td>
+                            <td>${s.performance || '-'}</td>
+                            <td>${followDate}</td>
+                            <td>${createDate}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+                listCount.textContent = `(${list.length})`;
+                tbody.querySelectorAll('.clickable-row').forEach(tr => {
+                    tr.addEventListener('click', function() {
+                        const idx = parseInt(this.dataset.idx);
+                        loadStudentToForm(idx);
+                        tbody.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('selected-row'));
+                        this.classList.add('selected-row');
+                    });
+                });
+            }
+
+            // ============================================================
+            //  加载学员到表单
+            // ============================================================
+            function loadStudentToForm(idx) {
+                const s = students[idx];
+                if (!s) return;
+                editingId = idx;
+                sName.value = s.name || '';
+                sAge.value = s.age || '';
+                sPhone.value = s.phone || '';
+                sCourse.value = s.course || '口才';
+                sStatus.value = s.status || '试听';
+                sSource.value = s.source || '上门';
+                sFollowDate.value = s.followDate || '';
+                sNote.value = s.note || '';
+                sExtra.value = s.extra || '';
+                sSemester.value = s.semester || '全年';
+                sSchool.value = s.school || '';
+                sAmount.value = s.amount || '';
+                sPerformance.value = s.performance || '';
+                sWork.value = s.work || '';
+                editHint.textContent = '✏️ 编辑中';
+                formTitle.textContent = '编辑学员';
+                submitBtn.innerHTML = '<i class="fas fa-sync"></i> 更新';
+                deleteBtn.style.display = 'inline-flex';
+                renderFollowups(s.followups || []);
+                navigateTo('students');
+            }
+
+            // ============================================================
+            //  重置表单
+            // ============================================================
+            function resetForm() {
+                form.reset();
+                editingId = null;
+                editHint.textContent = '';
+                formTitle.textContent = '录入学员';
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> 保存';
+                deleteBtn.style.display = 'none';
+                sFollowDate.value = getTodayStr();
+                sCourse.value = '口才';
+                sStatus.value = '试听';
+                sSource.value = '上门';
+                sSemester.value = '全年';
+                sSchool.value = '';
+                sAmount.value = '';
+                sPerformance.value = '';
+                sWork.value = '';
+                renderFollowups([]);
+                tbody.querySelectorAll('.clickable-row').forEach(r => r.classList.remove('selected-row'));
+            }
+
+            // ============================================================
+            //  跟进记录
+            // ============================================================
+            function renderFollowups(followups) {
+                if (!followups || followups.length === 0) {
+                    fuList.innerHTML = `<div class="fu-empty">暂无跟进记录</div>`;
+                    fuCount.textContent = '(0)';
+                    return;
+                }
+                const sorted = [...followups].sort((a, b) => b.date.localeCompare(a.date));
+                let html = '';
+                sorted.forEach((fu, i) => {
+                    html += `
+                        <div class="fu-item">
+                            <span class="fu-date">${formatDateDisplay(fu.date)}</span>
+                            <span class="fu-content">${fu.content}</span>
+                            <button class="fu-del" data-idx="${i}" title="删除"><i class="fas fa-times"></i></button>
+                        </div>
+                    `;
+                });
+                fuList.innerHTML = html;
+                fuCount.textContent = `(${followups.length})`;
+                fuList.querySelectorAll('.fu-del').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (editingId === null) { showToast('请先选择学员', 'warning'); return; }
+                        const s = students[editingId];
+                        if (!s) return;
+                        if (!s.followups) s.followups = [];
+                        const target = s.followups.findIndex((f, i) => {
+                            return f.date === sorted[parseInt(this.dataset.idx)].date &&
+                                f.content === sorted[parseInt(this.dataset.idx)].content;
+                        });
+                        if (target !== -1) {
+                            s.followups.splice(target, 1);
+                            saveStudents();
+                            renderFollowups(s.followups);
+                            updateStats();
+                            renderList(searchInput.value);
+                            showToast('跟进记录已删除');
+                        }
+                    });
+                });
+            }
+
+            function addFollowup() {
+                if (editingId === null) { showToast('请先选择一位学员', 'warning'); return; }
+                const date = fuDate.value,
+                    content = fuContent.value.trim();
+                if (!date) { showToast('请选择跟进日期', 'warning'); return; }
+                if (!content) { showToast('请输入跟进内容', 'warning'); return; }
+                const s = students[editingId];
+                if (!s) return;
+                if (!s.followups) s.followups = [];
+                s.followups.push({ date, content });
+                saveStudents();
+                renderFollowups(s.followups);
+                fuContent.value = '';
+                fuDate.value = getTodayStr();
+                updateStats();
+                renderList(searchInput.value);
+                showToast('跟进记录已添加');
+            }
+
+            // ============================================================
+            //  表单提交
+            // ============================================================
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = sName.value.trim();
+                if (!name) { showToast('请输入姓名', 'warning'); return; }
+                const student = {
+                    name,
+                    age: sAge.value.trim() || '',
+                    phone: sPhone.value.trim() || '',
+                    course: sCourse.value,
+                    status: sStatus.value,
+                    source: sSource.value,
+                    followDate: sFollowDate.value || '',
+                    note: sNote.value.trim() || '',
+                    extra: sExtra.value.trim() || '',
+                    semester: sSemester.value,
+                    school: sSchool.value.trim() || '',
+                    amount: sAmount.value.trim() || '',
+                    performance: sPerformance.value.trim() || '',
+                    work: sWork.value.trim() || '',
+                };
+                if (editingId !== null) {
+                    const old = students[editingId];
+                    students[editingId] = { ...old, ...student, followups: old.followups || [], createDate: old
+                            .createDate || getTodayStr() };
+                    showToast('学员已更新');
+                } else {
+                    const newStudent = { ...student, id: genId(), createDate: getTodayStr(), followups: [] };
+                    students.push(newStudent);
+                    showToast('学员已添加');
+                }
+                saveStudents();
+                resetForm();
+                fuDate.value = getTodayStr();
+                renderList(searchInput.value);
+                updateStats();
+                renderCalendar();
+            });
+
+            deleteBtn.addEventListener('click', function() {
+                if (editingId === null) return;
+                if (!confirm(`确定删除学员“${students[editingId].name}”吗？`)) return;
+                students.splice(editingId, 1);
+                saveStudents();
+                resetForm();
+                renderList(searchInput.value);
+                updateStats();
+                renderCalendar();
+                showToast('已删除学员');
+            });
+
+            searchInput.addEventListener('input', function() { renderList(this.value); });
+            form.querySelector('button[type="reset"]').addEventListener('click', function(e) { e.preventDefault();
+                resetForm();
+                fuDate.value = getTodayStr(); });
+            fuDate.value = getTodayStr();
+            sFollowDate.value = getTodayStr();
+            addFuBtn.addEventListener('click', addFollowup);
+            fuContent.addEventListener('keypress', function(e) { if (e.key === 'Enter') addFollowup(); });
+
+            // ============================================================
+            //  导出 Excel
+            // ============================================================
+            exportBtn.addEventListener('click', function() {
+                if (students.length === 0) { showToast('暂无学员数据可导出', 'warning'); return; }
+                const data = students.map(s => ({
+                    '姓名': s.name || '',
+                    '年龄': s.age || '',
+                    '电话': s.phone || '',
+                    '课程': s.course || '',
+                    '状态': s.status || '',
+                    '来源': s.source || '',
+                    '学期': s.semester || '全年',
+                    '就读学校': s.school || '',
+                    '金额': s.amount || '',
+                    '参加演出': s.performance || '',
+                    '学期作品': s.work || '',
+                    '跟进日期': s.followDate || '',
+                    '备注': s.note || '',
+                    '补充说明': s.extra || '',
+                    '录入日期': s.createDate || '',
+                    '跟进次数': (s.followups || []).length,
+                    '最后跟进': s.followups && s.followups.length > 0 ? s.followups[s.followups.length - 1].date : '',
+                }));
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(data);
+                XLSX.utils.book_append_sheet(wb, ws, '学员数据');
+                XLSX.writeFile(wb, `莞邑之声_学员数据_${getTodayStr()}.xlsx`);
+                showToast('学员Excel导出成功！');
+            });
+
+            // ============================================================
+            //  日历
+            // ============================================================
+            function renderCalendar() {
+                const year = calYear,
+                    month = calMonth;
+                calMonthYear.textContent = `${year}年${month+1}月`;
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const daysInPrev = new Date(year, month, 0).getDate();
+                const today = getTodayDate();
+                const createDates = new Set();
+                students.forEach(s => { if (s.createDate) createDates.add(s.createDate); });
+
+                let html = '';
+                const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
+                for (let i = 0; i < 7; i++) html += `<div class="day-name">${dayNames[i]}</div>`;
+
+                function getEventDisplay(key) {
+                    const events = calendarEvents[key] || [];
+                    if (events.length === 0) return null;
+                    const first = events[0];
+                    if (events.length === 1) return first;
+                    return first + ' +' + (events.length - 1);
+                }
+
+                for (let i = 0; i < firstDay; i++) {
+                    const d = daysInPrev - firstDay + 1 + i;
+                    const key = formatDateKey(year, month - 1, d);
+                    const hasStar = createDates.has(key);
+                    const eventText = getEventDisplay(key);
+                    html +=
+                        `<div class="day-cell other-month" data-key="${key}"><div class="day-number">${d}</div>${hasStar ? '<div class="star">★</div>' : ''}${eventText ? `<div class="day-event">${eventText}</div>` : ''}</div>`;
+                }
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const key = formatDateKey(year, month, d);
+                    const isToday = (year === today.year && month === today.month && d === today.day);
+                    const hasStar = createDates.has(key);
+                    const eventText = getEventDisplay(key);
+                    let cls = 'day-cell';
+                    if (isToday) cls += ' today';
+                    html +=
+                        `<div class="${cls}" data-key="${key}"><div class="day-number">${d}</div>${hasStar ? '<div class="star">★</div>' : ''}${eventText ? `<div class="day-event">${eventText}</div>` : ''}</div>`;
+                }
+                const total = firstDay + daysInMonth;
+                const remaining = (7 - total % 7) % 7;
+                for (let d = 1; d <= remaining; d++) {
+                    const key = formatDateKey(year, month + 1, d);
+                    const hasStar = createDates.has(key);
+                    const eventText = getEventDisplay(key);
+                    html +=
+                        `<div class="day-cell other-month" data-key="${key}"><div class="day-number">${d}</div>${hasStar ? '<div class="star">★</div>' : ''}${eventText ? `<div class="day-event">${eventText}</div>` : ''}</div>`;
+                }
+                calGrid.innerHTML = html;
+                calGrid.querySelectorAll('.day-cell[data-key]').forEach(cell => {
+                    cell.addEventListener('click', function() { openEventPopup(this.dataset.key); });
+                });
+            }
+
+            // ============================================================
+            //  日历活动弹窗
+            // ============================================================
+            function openEventPopup(dateKey) {
+                popupDateKey = dateKey;
+                const parts = parseDateKey(dateKey);
+                popupDateLabel.textContent = `${parts.year}年${parts.month+1}月${parts.day}日`;
+                renderPopupEvents(dateKey);
+                calPopup.classList.add('show');
+                popupEventInput.value = '';
+                popupEventInput.focus();
+            }
+
+            function renderPopupEvents(dateKey) {
+                const events = calendarEvents[dateKey] || [];
+                if (events.length === 0) {
+                    popupEventList.innerHTML =
+                        `<div style="color:var(--text-muted);text-align:center;padding:12px 0;">📭 暂无活动，添加一条吧</div>`;
+                    return;
+                }
+                let html = '';
+                events.forEach((ev, idx) => {
+                    html += `
+                        <div class="event-item-pop">
+                            <span>${ev}</span>
+                            <button class="del-e" data-idx="${idx}"><i class="fas fa-times"></i></button>
+                        </div>
+                    `;
+                });
+                popupEventList.innerHTML = html;
+                popupEventList.querySelectorAll('.del-e').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const idx = parseInt(this.dataset.idx);
+                        if (calendarEvents[dateKey]) {
+                            calendarEvents[dateKey].splice(idx, 1);
+                            if (calendarEvents[dateKey].length === 0) delete calendarEvents[dateKey];
+                            saveCalendarEvents();
+                            renderPopupEvents(dateKey);
+                            renderCalendar();
+                            showToast('活动已删除');
+                        }
+                    });
+                });
+            }
+
+            popupAddEvent.addEventListener('click', function() {
+                const text = popupEventInput.value.trim();
+                if (!text) { showToast('请输入活动内容', 'warning'); return; }
+                if (!popupDateKey) return;
+                if (!calendarEvents[popupDateKey]) calendarEvents[popupDateKey] = [];
+                calendarEvents[popupDateKey].push(text);
+                saveCalendarEvents();
+                renderPopupEvents(popupDateKey);
+                renderCalendar();
+                popupEventInput.value = '';
+                showToast('活动已添加');
+            });
+            popupEventInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') popupAddEvent.click(); });
+            popupClose.addEventListener('click', function() { calPopup.classList.remove('show'); });
+            calPopup.addEventListener('click', function(e) { if (e.target === this) calPopup.classList.remove('show'); });
+
+            calPrev.addEventListener('click', function() { calMonth--; if (calMonth < 0) { calMonth = 11;
+                    calYear--; } renderCalendar(); });
+            calNext.addEventListener('click', function() { calMonth++; if (calMonth > 11) { calMonth = 0;
+                    calYear++; } renderCalendar(); });
+            calToday.addEventListener('click', function() { const t = getTodayDate();
+                calYear = t.year;
+                calMonth = t.month;
+                renderCalendar(); });
+
+            // ============================================================
+            //  班级管理
+            // ============================================================
+            function renderClassList() {
+                const ids = Object.keys(classesData);
+                if (ids.length === 0) {
+                    classListContainer.innerHTML = `<span style="color:var(--text-muted);font-size:13px;">暂无班级，请添加</span>`;
+                    return;
+                }
+                let html = '';
+                ids.forEach(id => {
+                    const cls = classesData[id];
+                    const active = (id === currentClassId) ? 'active' : '';
+                    html += `
+                        <div class="class-tag ${active}" data-id="${id}">
+                            <span>${cls.name}</span>
+                            <span style="font-size:12px;color:var(--text-muted);">(${cls.students.length}人)</span>
+                            <button class="del-class" data-id="${id}" title="删除班级"><i class="fas fa-times"></i></button>
+                        </div>
+                    `;
+                });
+                classListContainer.innerHTML = html;
+                classListContainer.querySelectorAll('.class-tag').forEach(tag => {
+                    tag.addEventListener('click', function(e) {
+                        if (e.target.closest('.del-class')) return;
+                        const id = this.dataset.id;
+                        if (id) { currentClassId = id;
+                            renderClassList();
+                            renderClassDetail(); }
+                    });
+                });
+                classListContainer.querySelectorAll('.del-class').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = this.dataset.id;
+                        if (!id) return;
+                        if (!confirm(`确定删除班级“${classesData[id].name}”及其所有数据吗？`)) return;
+                        delete classesData[id];
+                        if (currentClassId === id) currentClassId = null;
+                        saveClasses();
+                        renderClassList();
+                        renderClassDetail();
+                        showToast('班级已删除');
+                    });
+                });
+            }
+
+            function renderClassDetail() {
+                if (!currentClassId || !classesData[currentClassId]) {
+                    classDetailContainer.innerHTML =
+                        `<div style="color:var(--text-muted);text-align:center;padding:48px 0;font-size:15px;font-weight:300;">请选择或添加一个班级</div>`;
+                    return;
+                }
+                const cls = classesData[currentClassId];
+                const totalLessons = cls.totalLessons || DEFAULT_LESSONS;
+                cls.students.forEach(stu => {
+                    if (!stu.attendance || stu.attendance.length !== totalLessons) {
+                        const old = stu.attendance || [];
+                        stu.attendance = [];
+                        for (let i = 0; i < totalLessons; i++) { stu.attendance.push(i < old.length ? old[i] : null); }
+                    } else {
+                        stu.attendance = stu.attendance.map(v => {
+                            if (v === true) return 'present';
+                            if (v === false) return 'absent';
+                            if (v === 'present' || v === 'absent' || v === 'other') return v;
+                            return null;
+                        });
+                    }
+                });
+
+                let html = `
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+                        <h4 style="font-size:17px;font-weight:600;font-family:'Playfair Display',serif;">${cls.name} 课堂登记（共${totalLessons}次课）</h4>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn btn-primary btn-sm" id="addStudentToClassBtn"><i class="fas fa-user-plus"></i> 添加学生</button>
+                            <button class="btn btn-accent btn-sm" id="exportClassExcelBtn"><i class="fas fa-file-excel"></i> 导出考勤表</button>
+                        </div>
+                    </div>
+                    <div class="class-table-wrap">
+                        <table>
+                            <thead><tr><th style="min-width:30px;">#</th><th style="min-width:80px;">姓名</th>`;
+                for (let i = 1; i <= totalLessons; i++) html += `<th style="min-width:30px;text-align:center;">${i}</th>`;
+                html += `<th style="min-width:44px;">出勤</th><th style="min-width:44px;">操作</th></tr></thead><tbody>`;
+
+                if (cls.students.length === 0) {
+                    html += `<tr><td colspan="${totalLessons+4}" style="text-align:center;color:var(--text-muted);padding:30px 0;">暂无学生，请添加</td></tr>`;
+                } else {
+                    cls.students.forEach((stu, idx) => {
+                        let p = 0,
+                            a = 0,
+                            o = 0;
+                        stu.attendance.forEach(v => { if (v === 'present') p++;
+                            else if (v === 'absent') a++;
+                            else if (v === 'other') o++; });
+                        const summary = `${p}✔ ${a}✘ ${o}O`;
+                        html +=
+                            `<tr data-stu-id="${stu.id}"><td>${idx+1}</td><td class="stu-name">${stu.name}</td>`;
+                        for (let i = 0; i < totalLessons; i++) {
+                            const val = stu.attendance[i];
+                            let clsName = 'attendance-cell empty',
+                                symbol = '';
+                            if (val === 'present') { clsName = 'attendance-cell present';
+                                symbol = '✔'; } else if (val === 'absent') { clsName = 'attendance-cell absent';
+                                symbol = '✘'; } else if (val === 'other') { clsName = 'attendance-cell other';
+                                symbol = 'O'; } else { symbol = '·'; }
+                            html +=
+                                `<td class="${clsName}" data-class="${currentClassId}" data-stu="${stu.id}" data-lesson="${i}">${symbol}</td>`;
+                        }
+                        html += `<td>${summary}</td><td><button class="del-student" data-id="${stu.id}" title="移除学生"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+                    });
+                }
+                html += `</tbody></table></div>`;
+                classDetailContainer.innerHTML = html;
+
+                classDetailContainer.querySelectorAll('.attendance-cell').forEach(cell => {
+                    cell.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const classId = this.dataset.class,
+                            stuId = this.dataset.stu,
+                            lessonIdx = parseInt(this.dataset.lesson);
+                        if (!classId || !stuId || isNaN(lessonIdx)) return;
+                        popupTarget = { classId, studentId: stuId, lessonIndex: lessonIdx };
+                        const rect = this.getBoundingClientRect();
+                        const pw = 200;
+                        const left = Math.min(rect.left + rect.width / 2 - pw / 2, window.innerWidth - pw -
+                        20);
+                        const top = rect.bottom + 10;
+                        attendancePopup.style.left = Math.max(10, left) + 'px';
+                        attendancePopup.style.top = (top > window.innerHeight - 160 ? rect.top - 160 : top) +
+                            'px';
+                        attendancePopup.style.display = 'flex';
+                    });
+                });
+
+                classDetailContainer.querySelectorAll('.del-student').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        if (!confirm('确定移除该学生吗？')) return;
+                        const idx = cls.students.findIndex(s => s.id === id);
+                        if (idx !== -1) { cls.students.splice(idx, 1);
+                            saveClasses();
+                            renderClassDetail();
+                            renderClassList();
+                            showToast('学生已移除'); }
+                    });
+                });
+
+                const addBtn = document.getElementById('addStudentToClassBtn');
+                if (addBtn) {
+                    addBtn.addEventListener('click', function() {
+                        const name = prompt('请输入学生姓名：');
+                        if (name && name.trim()) {
+                            cls.students.push({ id: genId(), name: name.trim(), attendance: new Array(
+                                    totalLessons).fill(null) });
+                            saveClasses();
+                            renderClassDetail();
+                            renderClassList();
+                            showToast('学生已添加');
+                        }
+                    });
+                }
+
+                const exportClassBtn = document.getElementById('exportClassExcelBtn');
+                if (exportClassBtn) {
+                    exportClassBtn.addEventListener('click', function() {
+                        if (cls.students.length === 0) { showToast('该班级暂无学生', 'warning'); return; }
+                        const header = ['序号', '姓名'];
+                        for (let i = 1; i <= totalLessons; i++) header.push(`第${i}次`);
+                        header.push('出勤统计');
+                        const rows = cls.students.map((stu, idx) => {
+                            const row = [idx + 1, stu.name];
+                            let p = 0,
+                                a = 0,
+                                o = 0;
+                            for (let i = 0; i < totalLessons; i++) {
+                                const val = stu.attendance[i];
+                                let symbol = '';
+                                if (val === 'present') { symbol = '✔';
+                                    p++; } else if (val === 'absent') { symbol = '✘';
+                                    a++; } else if (val === 'other') { symbol = 'O';
+                                    o++; } else { symbol = ''; }
+                                row.push(symbol);
+                            }
+                            row.push(`✔${p} ✘${a} O${o}`);
+                            return row;
+                        });
+                        const data = [header, ...rows];
+                        const wb = XLSX.utils.book_new();
+                        const ws = XLSX.utils.aoa_to_sheet(data);
+                        XLSX.utils.book_append_sheet(wb, ws, `${cls.name}考勤`);
+                        XLSX.writeFile(wb, `${cls.name}_考勤表_${getTodayStr()}.xlsx`);
+                        showToast(`“${cls.name}”考勤表导出成功！`);
+                    });
+                }
+            }
+
+            function addClass() {
+                const name = newClassName.value.trim();
+                if (!name) { showToast('请输入班级名称', 'warning'); return; }
+                for (let id in classesData) { if (classesData[id].name === name) { showToast('班级名称已存在',
+                        'warning'); return; } }
+                const id = genId();
+                classesData[id] = { id, name, totalLessons: DEFAULT_LESSONS, students: [] };
+                saveClasses();
+                currentClassId = id;
+                newClassName.value = '';
+                renderClassList();
+                renderClassDetail();
+                showToast('班级已添加');
+            }
+            addClassBtn.addEventListener('click', addClass);
+            newClassName.addEventListener('keypress', function(e) { if (e.key === 'Enter') addClass(); });
+
+            // ============================================================
+            //  出勤弹出层事件
+            // ============================================================
+            function setAttendance(value) {
+                if (!popupTarget) return;
+                const { classId, studentId, lessonIndex } = popupTarget;
+                const cls = classesData[classId];
+                if (!cls) return;
+                const stu = cls.students.find(s => s.id === studentId);
+                if (!stu) return;
+                if (lessonIndex < 0 || lessonIndex >= stu.attendance.length) return;
+                stu.attendance[lessonIndex] = value;
+                saveClasses();
+                renderClassDetail();
+                const label = value === 'present' ? '✔ 出勤' : (value === 'absent' ? '✘ 缺勤' : 'O 其他');
+                showToast(label);
+                attendancePopup.style.display = 'none';
+                popupTarget = null;
+            }
+            popupPresent.addEventListener('click', function() { setAttendance('present'); });
+            popupAbsent.addEventListener('click', function() { setAttendance('absent'); });
+            popupOther.addEventListener('click', function() { setAttendance('other'); });
+
+            document.addEventListener('click', function(e) {
+                if (!attendancePopup.contains(e.target) && !e.target.closest('.attendance-cell')) {
+                    attendancePopup.style.display = 'none';
+                    popupTarget = null;
+                }
+            });
+
+            // ============================================================
+            //  数据同步功能
+            // ============================================================
+            function setSyncStatus(message, type = 'info') {
+                syncStatus.textContent = message;
+                syncStatus.className = 'sync-status ' + type;
+                syncStatus.style.display = 'block';
+                setTimeout(() => {
+                    syncStatus.style.display = 'none';
+                }, 5000);
+            }
+
+            function getAllData() {
+                return {
+                    version: '1.0',
+                    exportTime: new Date().toISOString(),
+                    students: students,
+                    calendarEvents: calendarEvents,
+                    classesData: classesData
+                };
+            }
+
+            function exportData() {
+                const rawData = getAllData();
+                const desensitized = desensitizeData(rawData);
+                const jsonStr = JSON.stringify(desensitized, null, 2);
+                syncTextarea.value = jsonStr;
+                setSyncStatus('✅ 数据已脱敏导出，请复制文本并在其他设备导入', 'success');
+                showToast('数据已导出（脱敏）');
+            }
+
+            function copyData() {
+                const text = syncTextarea.value;
+                if (!text) { showToast('没有可复制的内容', 'warning'); return; }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast('已复制到剪贴板');
+                        setSyncStatus('📋 已复制到剪贴板', 'info');
+                    }).catch(() => {
+                        fallbackCopy(text);
+                    });
+                } else {
+                    fallbackCopy(text);
+                }
+            }
+
+            function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                ta.style.top = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('已复制到剪贴板');
+                    setSyncStatus('📋 已复制到剪贴板', 'info');
+                } catch (e) {
+                    showToast('复制失败，请手动选择复制', 'warning');
+                }
+                document.body.removeChild(ta);
+            }
+
+            function importData() {
+                const text = syncTextarea.value.trim();
+                if (!text) { setSyncStatus('⚠️ 请先粘贴要导入的数据', 'error');
+                    showToast('请粘贴数据', 'warning'); return; }
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(text);
+                } catch (e) {
+                    setSyncStatus('❌ 数据格式错误，请检查是否为有效的JSON', 'error');
+                    showToast('数据格式错误', 'warning');
+                    return;
+                }
+
+                // 验证数据结构
+                if (!parsed.version || !parsed.students || !Array.isArray(parsed.students)) {
+                    setSyncStatus('❌ 数据格式不完整，缺少 students 字段或版本信息', 'error');
+                    showToast('数据格式不完整', 'warning');
+                    return;
+                }
+
+                if (!confirm('导入将覆盖当前所有数据（学员、日历、班级），确认继续吗？')) {
+                    return;
+                }
+
+                try {
+                    // 导入数据 (覆盖)
+                    students = parsed.students || [];
+                    calendarEvents = parsed.calendarEvents || {};
+                    classesData = parsed.classesData || {};
+
+                    // 确保数据结构完整
+                    students.forEach(s => { if (!s.followups) s.followups = []; });
+                    for (let id in classesData) {
+                        if (!classesData[id].students) classesData[id].students = [];
+                        if (!classesData[id].totalLessons) classesData[id].totalLessons = DEFAULT_LESSONS;
+                        const total = classesData[id].totalLessons;
+                        classesData[id].students.forEach(stu => {
+                            if (!stu.attendance || stu.attendance.length !== total) {
+                                const old = stu.attendance || [];
+                                stu.attendance = [];
+                                for (let i = 0; i < total; i++) { stu.attendance.push(i < old.length ? old[
+                                        i] : null); }
+                            }
+                        });
+                    }
+
+                    // 保存到本地存储
+                    saveStudents();
+                    saveCalendarEvents();
+                    saveClasses();
+
+                    // 刷新UI
+                    resetForm();
+                    renderList(searchInput.value);
+                    updateStats();
+                    renderCalendar();
+                    renderClassList();
+                    renderClassDetail();
+
+                    setSyncStatus(`✅ 数据导入成功！共 ${students.length} 名学员，${Object.keys(classesData).length} 个班级`, 'success');
+                    showToast('数据导入成功！');
+                } catch (e) {
+                    setSyncStatus('❌ 导入失败：' + e.message, 'error');
+                    showToast('导入失败', 'warning');
+                }
+            }
+
+            function clearSyncText() {
+                syncTextarea.value = '';
+                syncStatus.style.display = 'none';
+            }
+
+            // ============================================================
+            //  绑定数据同步事件
+            // ============================================================
+            syncExportBtn.addEventListener('click', exportData);
+            syncCopyBtn.addEventListener('click', copyData);
+            syncImportBtn.addEventListener('click', importData);
+            syncClearBtn.addEventListener('click', clearSyncText);
+
+            // 支持 Ctrl+Enter 快速导入
+            syncTextarea.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    importData();
+                }
+            });
+
+            // ============================================================
+            //  头部日期
+            // ============================================================
+            function updateHeaderDate() {
+                const t = getTodayDate();
+                document.getElementById('headerDate').textContent =
+                    `${t.year}年${String(t.month+1).padStart(2,'0')}月${String(t.day).padStart(2,'0')}日`;
+            }
+
+            // ============================================================
+            //  初始化
+            // ============================================================
+            function init() {
+                loadStudents();
+                loadCalendarEvents();
+                loadClasses();
+                updateHeaderDate();
+                resetForm();
+                fuDate.value = getTodayStr();
+                sFollowDate.value = getTodayStr();
+                const ids = Object.keys(classesData);
+                if (ids.length > 0) currentClassId = ids[0];
+                renderList('');
+                updateStats();
+                renderCalendar();
+                renderClassList();
+                renderClassDetail();
+                setInterval(updateHeaderDate, 60000);
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') { calPopup.classList.remove('show');
+                        attendancePopup.style.display = 'none';
+                        popupTarget = null; }
+                });
+                document.querySelector('.sidebar-nav .nav-item.active')?.click();
+            }
+
+            init();
+
+        })();
+    </script>
+
+</body>
+</html>
